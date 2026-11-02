@@ -2,32 +2,21 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { RefreshCw, Database, FileSpreadsheet, Download, Copy, Check, Sparkles, ExternalLink } from 'lucide-react';
+import { RefreshCw, Download, Sparkles } from 'lucide-react';
 import { DashboardMetrics } from '@/lib/types';
 import { DEFAULT_CSV_TEXT } from '@/lib/defaultData';
 
 interface Props {
   metrics: DashboardMetrics;
   onRefresh: () => void;
-  onOpenSheetModal: () => void;
   isLoading: boolean;
-  sheetUrl?: string;
 }
 
 export const SisaketHeader: React.FC<Props> = ({
   metrics,
   onRefresh,
-  onOpenSheetModal,
   isLoading,
-  sheetUrl,
 }) => {
-  const [copied, setCopied] = React.useState(false);
-
-  const handleCopyCSV = () => {
-    navigator.clipboard.writeText(DEFAULT_CSV_TEXT);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
 
   const handleDownloadCSV = () => {
     const blob = new Blob([DEFAULT_CSV_TEXT], { type: 'text/csv;charset=utf-8;' });
@@ -91,7 +80,7 @@ export const SisaketHeader: React.FC<Props> = ({
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons (View-Only & Safe) */}
             <div className="action-buttons-group">
               <button
                 onClick={onRefresh}
@@ -103,44 +92,13 @@ export const SisaketHeader: React.FC<Props> = ({
                 <span>{isLoading ? 'กำลังประมวลผล...' : 'รีเฟรชสด (On the Fly)'}</span>
               </button>
 
-              {(sheetUrl || metrics.sheetUrl) && (
-                <a
-                  href={metrics.sheetUrl || sheetUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-outline-amber"
-                  title="เปิดหน้า Google Sheet ใน Google Drive เพื่อแก้ไขข้อมูลสด"
-                >
-                  <ExternalLink size={15} className="text-amber-400" />
-                  <span>แก้ไขข้อมูลใน Google Sheet</span>
-                </a>
-              )}
-
-              <button
-                onClick={onOpenSheetModal}
-                className="btn btn-secondary"
-                title="ตั้งค่าเชื่อมต่อ Google Drive / Google Sheet"
-              >
-                <FileSpreadsheet size={16} className="text-emerald-400" />
-                <span>เชื่อมต่อ Google Sheet</span>
-              </button>
-
               <button
                 onClick={handleDownloadCSV}
-                className="btn btn-outline-amber"
-                title="ดาวน์โหลดไฟล์ CSV นำเข้า Google Drive"
+                className="btn btn-secondary"
+                title="ดาวน์โหลดชุดข้อมูลรายงาน (CSV)"
               >
                 <Download size={16} />
-                <span>ดาวน์โหลด CSV</span>
-              </button>
-
-              <button
-                onClick={handleCopyCSV}
-                className="btn btn-secondary"
-                title="คัดลอกข้อมูล CSV เพื่อวางใน Google Sheet"
-              >
-                {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
-                <span>{copied ? 'คัดลอกแล้ว!' : 'คัดลอก CSV'}</span>
+                <span>ดาวน์โหลดรายงาน (CSV)</span>
               </button>
             </div>
 

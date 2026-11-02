@@ -7,7 +7,6 @@ import { YearlyTrendChart } from '@/components/YearlyTrendChart';
 import { DistrictRankingChart } from '@/components/DistrictRankingChart';
 import { DistrictGrid } from '@/components/DistrictGrid';
 import { DistrictModal } from '@/components/DistrictModal';
-import { GoogleSheetModal } from '@/components/GoogleSheetModal';
 import { DataTable } from '@/components/DataTable';
 import { DEFAULT_RAW_RECORDS } from '@/lib/defaultData';
 import { computeDashboardMetrics } from '@/lib/parser';
@@ -27,7 +26,6 @@ export default function DashboardPage() {
 
   // Modals & Navigation
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictSummary | null>(null);
-  const [isSheetModalOpen, setIsSheetModalOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'districts' | 'table'>('overview');
 
   // Load saved Google Sheet URL or default embedded URL, with auto-sync and focus re-fetch
@@ -157,9 +155,7 @@ export default function DashboardPage() {
       <SisaketHeader
         metrics={metrics}
         onRefresh={handleRefresh}
-        onOpenSheetModal={() => setIsSheetModalOpen(true)}
         isLoading={isLoading}
-        sheetUrl={currentSheetUrl || metrics.sheetUrl}
       />
 
       <div className="container">
@@ -292,14 +288,6 @@ export default function DashboardPage() {
       <DistrictModal
         district={selectedDistrict}
         onClose={() => setSelectedDistrict(null)}
-      />
-
-      <GoogleSheetModal
-        isOpen={isSheetModalOpen}
-        onClose={() => setIsSheetModalOpen(false)}
-        currentSheetUrl={currentSheetUrl}
-        onConnectSheet={handleConnectSheet}
-        onResetToDefault={handleResetToDefault}
       />
 
       <style jsx>{`
