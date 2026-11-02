@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { DistrictSummary } from '@/lib/types';
-import { X, MapPin, Users, Home, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { X, MapPin, AlertCircle } from 'lucide-react';
 
 interface Props {
   district: DistrictSummary | null;

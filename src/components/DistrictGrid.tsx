@@ -2,18 +2,17 @@
 
 import React, { useState, useMemo } from 'react';
 import { DistrictSummary, RiskLevel } from '@/lib/types';
-import { MapPin, Search, ArrowUpDown, Filter, ChevronRight } from 'lucide-react';
+import { MapPin, Search, ArrowUpDown, ChevronRight } from 'lucide-react';
 
 interface Props {
   districts: DistrictSummary[];
   onSelectDistrict: (district: DistrictSummary) => void;
-  selectedYear: number | 'all';
+  selectedYear?: number | 'all';
 }
 
 export const DistrictGrid: React.FC<Props> = ({
   districts,
   onSelectDistrict,
-  selectedYear,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [riskFilter, setRiskFilter] = useState<RiskLevel | 'all'>('all');
@@ -99,7 +98,7 @@ export const DistrictGrid: React.FC<Props> = ({
             <ArrowUpDown size={14} className="text-slate-400" />
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as 'patients' | 'villages' | 'ratio' | 'name')}
               className="sort-select"
             >
               <option value="patients">เรียงตาม: ผู้ป่วยมากที่สุด</option>

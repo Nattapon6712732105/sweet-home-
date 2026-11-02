@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { YearSummary } from '@/lib/types';
-import { Calendar, BarChart3, TrendingUp, Info } from 'lucide-react';
+import { Calendar, TrendingUp } from 'lucide-react';
 
 interface Props {
   yearlySummaries: YearSummary[];
@@ -58,7 +58,7 @@ export const YearlyTrendChart: React.FC<Props> = ({
       {/* SVG Bar & Trend Chart */}
       <div className="chart-body">
         <div className="bars-track">
-          {yearlySummaries.map((item, idx) => {
+          {yearlySummaries.map((item) => {
             const heightPercent = Math.max((item.totalPatients / maxPatients) * 100, 6);
             const isSelected = selectedYear === item.year || selectedYear === 'all';
 

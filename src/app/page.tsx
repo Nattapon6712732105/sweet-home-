@@ -12,7 +12,7 @@ import { DEFAULT_RAW_RECORDS } from '@/lib/defaultData';
 import { computeDashboardMetrics } from '@/lib/parser';
 import { DEFAULT_SHEET_URL } from '@/lib/sheets';
 import { DashboardMetrics, DistrictSummary } from '@/lib/types';
-import { BarChart3, LayoutGrid, TableProperties, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
+import { BarChart3, LayoutGrid, TableProperties, RefreshCw, AlertCircle } from 'lucide-react';
 
 export default function DashboardPage() {
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
@@ -20,58 +20,13 @@ export default function DashboardPage() {
     computeDashboardMetrics(DEFAULT_RAW_RECORDS, 'all', 'local-cached')
   );
   const [allRawRecords, setAllRawRecords] = useState(DEFAULT_RAW_RECORDS);
-  const [currentSheetUrl, setCurrentSheetUrl] = useState<string>(DEFAULT_SHEET_URL);
+  const currentSheetUrl = DEFAULT_SHEET_URL;
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Modals & Navigation
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictSummary | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'districts' | 'table'>('overview');
-
-  // Load saved Google Sheet URL or default embedded URL, with auto-sync and focus re-fetch
-  useEffect(() => {
-    setMetrics(prev => ({
-      ...prev,
-      lastUpdated: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }),
-    }));
-
-    let targetUrl = DEFAULT_SHEET_URL;
-    try {
-      const savedUrl = localStorage.getItem('sisaket_google_sheet_url');
-      if (savedUrl) {
-        targetUrl = savedUrl;
-        setCurrentSheetUrl(savedUrl);
-      }
-    } catch {
-      // Ignore localStorage security errors in sandbox
-    }
-
-    if (targetUrl) {
-      handleFetchLiveSheet(targetUrl, selectedYear);
-    }
-
-    // Auto-sync polling every 20 seconds (on-the-fly live updates when sheet is modified)
-    const intervalId = setInterval(() => {
-      const activeUrl = currentSheetUrl || targetUrl;
-      if (activeUrl) {
-        handleFetchLiveSheet(activeUrl, selectedYear);
-      }
-    }, 20000);
-
-    // Instant re-fetch when user switches back to this browser tab after editing in Google Sheet
-    const handleFocus = () => {
-      const activeUrl = currentSheetUrl || targetUrl;
-      if (activeUrl) {
-        handleFetchLiveSheet(activeUrl, selectedYear);
-      }
-    };
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [currentSheetUrl, selectedYear]);
 
   // On-the-fly fetcher from Google Sheet or local dataset
   const handleFetchLiveSheet = useCallback(async (sheetUrl: string, yr: number | 'all') => {
@@ -96,8 +51,9 @@ export default function DashboardPage() {
       } else {
         throw new Error(data.error || 'ไม่สามารถดึงข้อมูลจาก Google Sheet ได้');
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลสด');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการดึงข้อมูลสด';
+      setErrorMessage(msg);
       // Fallback: recompute from existing records on-the-fly
       setMetrics(computeDashboardMetrics(allRawRecords, yr, 'local-cached'));
       return false;
@@ -105,6 +61,30 @@ export default function DashboardPage() {
       setIsLoading(false);
     }
   }, [allRawRecords]);
+
+  // Load Google Sheet with auto-sync and focus re-fetch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleFetchLiveSheet(currentSheetUrl, selectedYear);
+    }, 0);
+
+    // Auto-sync polling every 20 seconds (on-the-fly live updates when sheet is modified)
+    const intervalId = setInterval(() => {
+      handleFetchLiveSheet(currentSheetUrl, selectedYear);
+    }, 20000);
+
+    // Instant re-fetch when user switches back to this browser tab after editing in Google Sheet
+    const handleFocus = () => {
+      handleFetchLiveSheet(currentSheetUrl, selectedYear);
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [handleFetchLiveSheet, currentSheetUrl, selectedYear]);
 
   // Handle year filter change (instant on-the-fly computation)
   const handleSelectYear = (yr: number | 'all') => {
@@ -114,29 +94,6 @@ export default function DashboardPage() {
     } else {
       setMetrics(computeDashboardMetrics(allRawRecords, yr, 'local-cached'));
     }
-  };
-
-  // Connect custom Google Sheet
-  const handleConnectSheet = async (url: string): Promise<boolean> => {
-    const success = await handleFetchLiveSheet(url, selectedYear);
-    if (success) {
-      setCurrentSheetUrl(url);
-      try {
-        localStorage.setItem('sisaket_google_sheet_url', url);
-      } catch {}
-      return true;
-    }
-    return false;
-  };
-
-  // Reset to default Sisaket dataset
-  const handleResetToDefault = () => {
-    setCurrentSheetUrl('');
-    setAllRawRecords(DEFAULT_RAW_RECORDS);
-    setMetrics(computeDashboardMetrics(DEFAULT_RAW_RECORDS, selectedYear, 'local-cached'));
-    try {
-      localStorage.removeItem('sisaket_google_sheet_url');
-    } catch {}
   };
 
   // Manual refresh button
@@ -165,7 +122,7 @@ export default function DashboardPage() {
           <div className="slogan-content">
             <span className="slogan-badge">คำขวัญจังหวัดศรีสะเกษ</span>
             <span className="slogan-text">
-              "แดนปราสาทขอม ดอกลำดวนบาน กระเทียมดี ข้าวสารหอม ผ้าไหมงาม ดินดำน้ำชุ่ม จิตใจโอบอ้อมอารี"
+              &ldquo;แดนปราสาทขอม ดอกลำดวนบาน กระเทียมดี ข้าวสารหอม ผ้าไหมงาม ดินดำน้ำชุ่ม จิตใจโอบอ้อมอารี&rdquo;
             </span>
           </div>
           <div className="onthefly-pill">

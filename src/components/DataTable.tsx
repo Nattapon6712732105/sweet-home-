@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { RawRecord, RiskLevel } from '@/lib/types';
+import { RawRecord } from '@/lib/types';
 import { Table, Search, Download, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface Props {
@@ -28,15 +28,15 @@ export const DataTable: React.FC<Props> = ({ records, selectedYear }) => {
   };
 
   const processed = useMemo(() => {
-    let list = records.filter((r) => {
+    const list = records.filter((r) => {
       const matchYear = selectedYear === 'all' || r.year === selectedYear;
       const matchSearch = r.district.toLowerCase().includes(searchTerm.toLowerCase());
       return matchYear && matchSearch;
     });
 
     list.sort((a, b) => {
-      let valA: any;
-      let valB: any;
+      let valA: string | number = 0;
+      let valB: string | number = 0;
 
       if (sortField === 'year') {
         valA = a.year;
@@ -55,12 +55,14 @@ export const DataTable: React.FC<Props> = ({ records, selectedYear }) => {
         valB = b.villages > 0 ? b.patients / b.villages : 0;
       }
 
-      if (typeof valA === 'string') {
+      if (typeof valA === 'string' && typeof valB === 'string') {
         const cmp = valA.localeCompare(valB, 'th');
         return sortAsc ? cmp : -cmp;
       }
 
-      return sortAsc ? valA - valB : valB - valA;
+      const numA = Number(valA);
+      const numB = Number(valB);
+      return sortAsc ? numA - numB : numB - numA;
     });
 
     return list;

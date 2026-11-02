@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchGoogleSheetCSV } from '@/lib/sheets';
 import { parseCSV, computeDashboardMetrics } from '@/lib/parser';
-import { DEFAULT_CSV_TEXT, DEFAULT_RAW_RECORDS } from '@/lib/defaultData';
+import { DEFAULT_RAW_RECORDS } from '@/lib/defaultData';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
