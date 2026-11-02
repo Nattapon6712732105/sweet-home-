@@ -1,7 +1,10 @@
 /**
- * Default embedded Google Sheet URL (can be overridden via environment variable)
+ * Default embedded Google Sheet URL
  */
-export const DEFAULT_SHEET_URL = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL || process.env.GOOGLE_SHEET_URL || '';
+export const DEFAULT_SHEET_URL =
+  process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL ||
+  process.env.GOOGLE_SHEET_URL ||
+  'https://docs.google.com/spreadsheets/d/1aPuNopIwNKeN3HlA413IFbjG2feiNGuKvQ6PJA2y8UM/edit?usp=sharing';
 
 /**
  * Extract Google Spreadsheet ID or normalize URL
