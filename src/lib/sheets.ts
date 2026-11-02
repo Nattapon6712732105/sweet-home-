@@ -1,4 +1,9 @@
 /**
+ * Default embedded Google Sheet URL (can be overridden via environment variable)
+ */
+export const DEFAULT_SHEET_URL = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL || process.env.GOOGLE_SHEET_URL || '';
+
+/**
  * Extract Google Spreadsheet ID or normalize URL
  */
 export function extractSpreadsheetId(input: string): string | null {

@@ -5,7 +5,7 @@ import { DEFAULT_CSV_TEXT, DEFAULT_RAW_RECORDS } from '@/lib/defaultData';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const sheetInput = searchParams.get('url') || searchParams.get('id');
+  const sheetInput = searchParams.get('url') || searchParams.get('id') || process.env.GOOGLE_SHEET_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL || '';
   const yearParam = searchParams.get('year');
   const selectedYear = yearParam && yearParam !== 'all' ? parseInt(yearParam, 10) : 'all';
 

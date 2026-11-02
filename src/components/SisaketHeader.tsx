@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { RefreshCw, Database, FileSpreadsheet, Download, Copy, Check, Sparkles } from 'lucide-react';
+import { RefreshCw, Database, FileSpreadsheet, Download, Copy, Check, Sparkles, ExternalLink } from 'lucide-react';
 import { DashboardMetrics } from '@/lib/types';
 import { DEFAULT_CSV_TEXT } from '@/lib/defaultData';
 
@@ -11,6 +11,7 @@ interface Props {
   onRefresh: () => void;
   onOpenSheetModal: () => void;
   isLoading: boolean;
+  sheetUrl?: string;
 }
 
 export const SisaketHeader: React.FC<Props> = ({
@@ -18,6 +19,7 @@ export const SisaketHeader: React.FC<Props> = ({
   onRefresh,
   onOpenSheetModal,
   isLoading,
+  sheetUrl,
 }) => {
   const [copied, setCopied] = React.useState(false);
 
@@ -100,6 +102,19 @@ export const SisaketHeader: React.FC<Props> = ({
                 <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
                 <span>{isLoading ? 'กำลังประมวลผล...' : 'รีเฟรชสด (On the Fly)'}</span>
               </button>
+
+              {(sheetUrl || metrics.sheetUrl) && (
+                <a
+                  href={metrics.sheetUrl || sheetUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-outline-amber"
+                  title="เปิดหน้า Google Sheet ใน Google Drive เพื่อแก้ไขข้อมูลสด"
+                >
+                  <ExternalLink size={15} className="text-amber-400" />
+                  <span>แก้ไขข้อมูลใน Google Sheet</span>
+                </a>
+              )}
 
               <button
                 onClick={onOpenSheetModal}

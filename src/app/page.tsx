@@ -11,6 +11,7 @@ import { GoogleSheetModal } from '@/components/GoogleSheetModal';
 import { DataTable } from '@/components/DataTable';
 import { DEFAULT_RAW_RECORDS } from '@/lib/defaultData';
 import { computeDashboardMetrics } from '@/lib/parser';
+import { DEFAULT_SHEET_URL } from '@/lib/sheets';
 import { DashboardMetrics, DistrictSummary } from '@/lib/types';
 import { BarChart3, LayoutGrid, TableProperties, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
 
@@ -20,7 +21,7 @@ export default function DashboardPage() {
     computeDashboardMetrics(DEFAULT_RAW_RECORDS, 'all', 'local-cached')
   );
   const [allRawRecords, setAllRawRecords] = useState(DEFAULT_RAW_RECORDS);
-  const [currentSheetUrl, setCurrentSheetUrl] = useState<string>('');
+  const [currentSheetUrl, setCurrentSheetUrl] = useState<string>(DEFAULT_SHEET_URL);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -29,22 +30,50 @@ export default function DashboardPage() {
   const [isSheetModalOpen, setIsSheetModalOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'districts' | 'table'>('overview');
 
-  // Load saved Google Sheet URL from localStorage and update client timestamp
+  // Load saved Google Sheet URL or default embedded URL, with auto-sync and focus re-fetch
   useEffect(() => {
     setMetrics(prev => ({
       ...prev,
       lastUpdated: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }),
     }));
+
+    let targetUrl = DEFAULT_SHEET_URL;
     try {
       const savedUrl = localStorage.getItem('sisaket_google_sheet_url');
       if (savedUrl) {
+        targetUrl = savedUrl;
         setCurrentSheetUrl(savedUrl);
-        handleFetchLiveSheet(savedUrl, selectedYear);
       }
     } catch {
       // Ignore localStorage security errors in sandbox
     }
-  }, []);
+
+    if (targetUrl) {
+      handleFetchLiveSheet(targetUrl, selectedYear);
+    }
+
+    // Auto-sync polling every 20 seconds (on-the-fly live updates when sheet is modified)
+    const intervalId = setInterval(() => {
+      const activeUrl = currentSheetUrl || targetUrl;
+      if (activeUrl) {
+        handleFetchLiveSheet(activeUrl, selectedYear);
+      }
+    }, 20000);
+
+    // Instant re-fetch when user switches back to this browser tab after editing in Google Sheet
+    const handleFocus = () => {
+      const activeUrl = currentSheetUrl || targetUrl;
+      if (activeUrl) {
+        handleFetchLiveSheet(activeUrl, selectedYear);
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [currentSheetUrl, selectedYear]);
 
   // On-the-fly fetcher from Google Sheet or local dataset
   const handleFetchLiveSheet = useCallback(async (sheetUrl: string, yr: number | 'all') => {
@@ -130,6 +159,7 @@ export default function DashboardPage() {
         onRefresh={handleRefresh}
         onOpenSheetModal={() => setIsSheetModalOpen(true)}
         isLoading={isLoading}
+        sheetUrl={currentSheetUrl || metrics.sheetUrl}
       />
 
       <div className="container">
